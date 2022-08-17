@@ -24,3 +24,8 @@ class ModelsTest(TestCase):
         for email ,normalized in emails:
             user = get_user_model().objects.create_user(email=email)
             self.assertEqual(user.email,normalized)
+
+    def test_user_email_have_to_be_required(self):
+        with self.assertRaises(ValueError):
+            get_user_model().objects.create_user(email="")
+
