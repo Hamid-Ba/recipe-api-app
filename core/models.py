@@ -15,6 +15,16 @@ class UserManager(BaseUserManager):
         
         return user
 
+    def create_superuser(self,email,password=None,**extra_fields):
+        """Create a superuser"""
+        if not email: raise ValueError
+        
+        user = self.model(email=self.normalize_email(email), is_staff=True,is_superuser=True ,**extra_fields)
+        user.set_password(password)
+        user.save()
+        
+        return user
+
 class User(AbstractBaseUser,PermissionsMixin):
     """User Model"""
 

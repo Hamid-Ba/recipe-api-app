@@ -29,3 +29,11 @@ class ModelsTest(TestCase):
         with self.assertRaises(ValueError):
             get_user_model().objects.create_user(email="")
 
+    def test_create_superuser_should_work_properly(self):
+        email = "test@example.com"
+        password = "test123"
+        user = get_user_model().objects.create_superuser(email=email, password=password)
+
+        self.assertTrue(user.is_superuser)
+        self.assertTrue(user.is_staff)
+
