@@ -1,8 +1,8 @@
+"""Test For Admin"""
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.test import Client
-
 
 class AdminTest(TestCase):
     """Test Admin Panel"""
@@ -27,3 +27,10 @@ class AdminTest(TestCase):
 
         self.assertContains(res, self.user.email)
         self.assertContains(res, self.user.name)
+
+    def test_user_editable_should_work(self):
+        """Test User Editable Should Work"""
+        url = reverse("admin:core_user_change",args=[self.user.id])
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code , 200)
