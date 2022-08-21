@@ -34,3 +34,10 @@ class AdminTest(TestCase):
         res = self.client.get(url)
 
         self.assertEqual(res.status_code , 200)
+
+    def test_user_add_should_work(self):
+        """Test User Adding Should Work"""
+        url = reverse("admin:core_user_add")
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code , 200)
