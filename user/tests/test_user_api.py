@@ -6,6 +6,7 @@ from rest_framework.test import APIClient
 from rest_framework import status 
 
 CREATE_USER_URL = reverse("user:create")
+TOKEN_USER_URL = reverse("user:token")
 
 def create_user(**payLoad):
     """Shortcut Create User"""
@@ -14,7 +15,6 @@ def create_user(**payLoad):
 class PublicTest(TestCase):
     """Test User Public Section"""
     def setUp(self):
-        
         self.client = APIClient()
 
     def test_user_should_be_registered_properly(self):
@@ -57,3 +57,40 @@ class PublicTest(TestCase):
         
         user = get_user_model().objects.filter(email=new_payload["email"]).exists()
         self.assertFalse(user)
+
+    def test_create_token_should_work_properly(self):
+        """ Test Token Creation """
+        payload = {
+            'email' : "test@example.com",
+            'password' : 'pass123456',
+            'name' : 'test user'
+        }
+
+        create_user(**payload)
+        res = self.client.post(TOKEN_USER_URL,payload)
+
+        self.assertEqual(res.status_code , status.HTTP_200_OK)
+
+    def test_wrong_password_should_not_authorize(self):
+        """ Test Token Creation With Wrong Password """
+        payload = {
+            'email' : "test@example.com",
+            'password' : 'pass123456',
+        }
+
+        create_user(**payload)
+        res = self.client.post(TOKEN_USER_URL,{'email' : payload["email"] , 'password' : "wrongpass"})
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_blank_password_should_not_authorize(self):
+        """ Test Token Creation With Blank Password """
+        payload = {
+            'email' : "test@example.com",
+            'password' : 'pass123456',
+        }
+
+        create_user(**payload)
+        res = self.client.post(TOKEN_USER_URL,{'email' : payload["email"] , 'password' : ""})
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
