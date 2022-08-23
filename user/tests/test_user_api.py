@@ -7,6 +7,7 @@ from rest_framework import status
 
 CREATE_USER_URL = reverse("user:create")
 TOKEN_USER_URL = reverse("user:token")
+ME_USER_URL = reverse("user:me")
 
 def create_user(**payLoad):
     """Shortcut Create User"""
@@ -69,6 +70,7 @@ class PublicTest(TestCase):
         create_user(**payload)
         res = self.client.post(TOKEN_USER_URL,payload)
 
+        self.assertIn('token',res.data)
         self.assertEqual(res.status_code , status.HTTP_200_OK)
 
     def test_wrong_password_should_not_authorize(self):
@@ -81,6 +83,7 @@ class PublicTest(TestCase):
         create_user(**payload)
         res = self.client.post(TOKEN_USER_URL,{'email' : payload["email"] , 'password' : "wrongpass"})
 
+        self.assertNotIn('token',res.data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_blank_password_should_not_authorize(self):
@@ -93,4 +96,53 @@ class PublicTest(TestCase):
         create_user(**payload)
         res = self.client.post(TOKEN_USER_URL,{'email' : payload["email"] , 'password' : ""})
 
+        self.assertNotIn('token',res.data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_retrieve_user_unauthorized(self):
+        """ Test Retrieve Unauthorized """
+        res = self.client.get(ME_USER_URL)
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class PrivateTest(TestCase):
+    """Authorized User Test Cases"""
+    def setUp(self):
+        payload = {
+            "email" : "test@example.com",
+            "password" : "pass123456",
+            "name" : "User Test"
+        }
+
+        self.client = APIClient()
+        self.user = create_user(**payload)
+        self.client.force_authenticate(user=self.user)
+
+    def test_retrieve_user_profile(self):
+        """ Authorized User Profile """
+        res = self.client.get(ME_USER_URL)
+
+        self.assertEqual(res.status_code,status.HTTP_200_OK)
+        self.assertEqual(res.data , {
+            "email" : "test@example.com",
+            "name" : "User Test",
+        })
+
+    def test_retrieve_user_me_with_post(self):
+        """ Test If Method Is Post Type"""
+        res = self.client.post(ME_USER_URL,{})
+        self.assertEqual(res.status_code,status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_update_user_profile(self):
+        """ Test Update User Profile """
+        new_info = {
+            "name" : "new Name",
+            "password" : "newPassword"
+        }
+        res = self.client.patch(ME_USER_URL,new_info)
+
+        self.user.refresh_from_db()
+        self.assertEqual(res.status_code , status.HTTP_200_OK)
+        self.assertEqual(self.user.name , new_info["name"])
+        self.assertTrue(self.user.check_password(new_info["password"]))
