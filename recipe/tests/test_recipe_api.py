@@ -6,11 +6,14 @@ from rest_framework.test import APIClient
 from rest_framework import status 
 from decimal import Decimal
 
-from core.models import Recipe
-from recipe.serializers import RecipeSerializer
+from core.models import Recipe, User
+from recipe.serializers import (RecipeSerializer,RecipeDetailSerializer)
 
 RECIPE_URL = reverse("recipe:recipe-list")
 
+def get_recipe_detail_url(recipe_id):
+    """Get Recipe By Id"""
+    return reverse("recipe:recipe-detail",args=[recipe_id])
 
 def create_recipe(user,**new_defaults):
     """Helper Function for creating a Recipe"""
@@ -69,3 +72,13 @@ class PrivateRecipeTest(TestCase):
         serializer = RecipeSerializer(recipes,many=True)
         self.assertEqual(res.status_code,status.HTTP_200_OK)
         self.assertEqual(res.data ,serializer.data)
+
+    def test_get_recipe_detail(self):
+        """Test Getting recipe detail"""
+        recipe = create_recipe(self.user)
+        
+        serializer = RecipeDetailSerializer(recipe)
+        res = self.client.get(get_recipe_detail_url(recipe.id))
+
+        self.assertEqual(res.status_code , status.HTTP_200_OK)
+        self.assertEqual(res.data,serializer.data)
