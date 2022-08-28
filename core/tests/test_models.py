@@ -1,7 +1,12 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from decimal import Decimal
-from core.models import Recipe
+from core.models import (Recipe , Tag)
+
+
+def create_user(email="test@example.com") :
+    """Create User Helper Function"""
+    return get_user_model().objects.create_user(email)
 
 class ModelsTest(TestCase):
     """Test Models"""
@@ -56,3 +61,12 @@ class ModelsTest(TestCase):
         self.assertEqual(recipe.desc , desc)
         self.assertEqual(recipe.link , link)
         self.assertEqual(recipe.user , user)
+
+    def test_create_tag_should_work_properly(self):
+        """Test Tag Creation Procces"""
+        user = create_user()
+
+        tag = Tag.objects.create(user=user,name="Desserte")
+
+        self.assertEqual(tag.user , user)
+        self.assertEqual(str(tag) , "Desserte")
