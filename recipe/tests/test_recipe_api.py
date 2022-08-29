@@ -6,8 +6,9 @@ from rest_framework.test import APIClient
 from rest_framework import status 
 from decimal import Decimal
 
-from core.models import Recipe, User
+from core.models import Recipe, User , Tag
 from recipe import serializers
+import recipe
 from recipe.serializers import (RecipeSerializer,RecipeDetailSerializer)
 
 RECIPE_URL = reverse("recipe:recipe-list")
@@ -15,6 +16,10 @@ RECIPE_URL = reverse("recipe:recipe-list")
 def get_recipe_detail_url(recipe_id):
     """Get Recipe By Id"""
     return reverse("recipe:recipe-detail",args=[recipe_id])
+
+def create_tag(user,name):
+    """Create Tag Helper Function"""
+    return Tag.objects.create(user=user, name=name)
 
 def create_recipe(user,**new_defaults):
     """Helper Function for creating a Recipe"""
@@ -103,3 +108,54 @@ class PrivateRecipeTest(TestCase):
             self.assertEqual(getattr(recipe,k), v)
         
         self.assertEqual(recipe.user , self.user)
+
+    def test_create_recipe_via_tag(self):
+        """Test Creating a new recipe via tags"""
+        payload = {
+            "title" : "Omlet",
+            "time_minute" : 10,
+            "desc" : "delicious dinner",
+            "price" : Decimal("3.95"),
+            "tags" : [
+                {"name" : "Dinner"},
+                {"name" : "Egg"}
+            ]
+        }
+        res = self.client.post(RECIPE_URL, payload,format = "json")
+        self.assertEqual(res.status_code , status.HTTP_201_CREATED)
+
+        recipe = Recipe.objects.filter(user=self.user)[0]
+
+        self.assertEqual(recipe.user, self.user)
+        self.assertEqual(recipe.tags.count() , 2)
+        
+        for tag in payload['tags']:
+            exists = recipe.tags.filter(
+                name = tag['name'],
+                user = self.user
+            ).exists()
+            self.assertTrue(exists)
+
+    def test_create_recipe_with_existing_tags(self):
+        """Test Create Recipe with existing tags"""
+        tag_1 = create_tag(self.user,"Dinner")
+        
+        payload = {
+            "title" : "Omlet",
+            "time_minute" : 10,
+            "desc" : "delicious dinner",
+            "price" : Decimal("3.95"),
+            "tags" : [{"name" : "Dinner"} , {"name" : "Egg"}]
+        }
+
+        res = self.client.post(RECIPE_URL,payload, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        recipe = Recipe.objects.filter(user=self.user)[0]
+
+        self.assertIn(tag_1,recipe.tags.all())
+
+        for tag in payload['tags']:
+            exists = recipe.tags.filter(name=tag['name'],user=self.user).exists()
+            self.assertTrue(exists)
+            
