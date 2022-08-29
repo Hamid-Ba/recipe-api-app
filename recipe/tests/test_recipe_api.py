@@ -174,7 +174,7 @@ class PrivateRecipeTest(TestCase):
         tag = tag[0]
         self.assertIn(tag , recipe.tags.all())
 
-    def test_assing_tag_to_recipe(self):
+    def test_assign_tag_to_recipe(self):
         """Test Assgin Tag To Recipe"""
         existed_tag = Tag.objects.create(user=self.user,name="Dinner")
         recipe = create_recipe(self.user)
