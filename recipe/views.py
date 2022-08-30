@@ -47,6 +47,7 @@ class TagViewSets(mixins.ListModelMixin,
 
 class IngredientViewSets(mixins.ListModelMixin
                         ,mixins.UpdateModelMixin
+                        ,mixins.DestroyModelMixin
                         , viewsets.GenericViewSet):
     """Ingredient ViewSets"""
     serializer_class = IngredientSerializer
