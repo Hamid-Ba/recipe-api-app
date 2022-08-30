@@ -2,9 +2,9 @@
 Recipe View
 """
 from rest_framework import (viewsets,mixins)
-from core.models import Recipe, Tag
+from core.models import Ingredient, Recipe, Tag
 
-from recipe.serializers import (RecipeSerializer, RecipeDetailSerializer, TagSerializer)
+from recipe.serializers import (IngredientSerializer, RecipeSerializer, RecipeDetailSerializer, TagSerializer)
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
@@ -19,7 +19,7 @@ class RecipeViewSets(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Customize Recipe List"""
-        return Recipe.objects.filter(user = self.request.user).order_by("-id")
+        return self.queryset.filter(user=self.request.user).order_by('-id')
 
     def get_serializer_class(self):
         """Specify The Serializer class"""
@@ -43,4 +43,14 @@ class TagViewSets(mixins.ListModelMixin,
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Tag.objects.filter(user=self.request.user).order_by('-name')
+        return self.queryset.filter(user=self.request.user).order_by('-name')
+
+class IngredientViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """Ingredient ViewSets"""
+    serializer_class = IngredientSerializer
+    queryset = Ingredient.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user).order_by('-name')
