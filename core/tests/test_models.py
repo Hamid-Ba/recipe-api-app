@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from decimal import Decimal
-from core.models import (Recipe , Tag)
+from core.models import (Ingredient, Recipe , Tag)
 
 
 def create_user(email="test@example.com") :
@@ -70,3 +70,13 @@ class ModelsTest(TestCase):
 
         self.assertEqual(tag.user , user)
         self.assertEqual(str(tag) , "Desserte")
+
+    def test_create_ingredient_should_work_properly(self):
+        """Test ingredient Model"""
+        user = create_user()
+        name = 'Egg'
+        ingredient = Ingredient.objects.create(user=user,name=name)
+
+        self.assertEqual(str(ingredient) , name)
+        self.assertEqual(ingredient.user , user)
+        

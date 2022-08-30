@@ -2,9 +2,7 @@
 Recipe Module Serializer
 """
 from rest_framework import serializers
-
 from core.models import Recipe, Tag
-import recipe
 
 class TagSerializer(serializers.ModelSerializer):
     """Serializer For Tag Model"""
