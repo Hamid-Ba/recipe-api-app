@@ -251,34 +251,27 @@ class PrivateRecipeTest(TestCase):
 
     def test_create_ingredient_on_update(self):
         """Test creating an Ingredient when recipe is updated"""
-        ingredient = create_ingredient(self.user, "Egg")
         recipe = create_recipe(self.user)
-        recipe.ingredients.add(ingredient)
 
-        payload = [{"name" : "Tomato"}]
+        payload = {"ingredients": [{"name" : "Egg"}]}
         url = get_recipe_detail_url(recipe.id)
         res = self.client.patch(url,payload, format="json")
 
         self.assertEqual(res.status_code,status.HTTP_200_OK)
 
-        recipe = Recipe.objects.get(user=self.user)
-        new_ingredient = Ingredient.objects.get(name = "Tomato")
-
-        self.assertIn(new_ingredient, recipe.ingredients.all())
-        self.assertNotIn(ingredient, recipe.ingredients.all())
+        ingredient = Ingredient.objects.get(name = "Egg")
+        self.assertIn(ingredient, recipe.ingredients.all())
 
     def test_assign_ingredient_to_recipe(self):
         """Test Assign Ingredient to Recipe"""
         ingredient = create_ingredient(self.user, "Egg")
         recipe = create_recipe(self.user)
 
-        payload = [{"name" : "Egg"}]
+        payload = {"ingredients": [{"name" : "Egg"}]}
         url = get_recipe_detail_url(recipe.id)
         res = self.client.patch(url, payload, format="json")
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-        recipe = Recipe.objects.get(user=self.user)
         self.assertIn(ingredient,recipe.ingredients.all())
 
     def test_clear_ingredient_from_recipe(self):
@@ -287,9 +280,9 @@ class PrivateRecipeTest(TestCase):
         recipe = create_recipe(self.user)
         recipe.ingredients.add(ingredient)
 
-        payload = []
+        payload = {"ingredients": []}
         url = get_recipe_detail_url(recipe.id)
-        res = self.client.patch(url, payload)
+        res = self.client.patch(url, payload , format="json")
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertNotIn(ingredient , recipe.ingredients.all())
